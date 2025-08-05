@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input'  
 import { Label } from '@/components/ui/label'
 import { useKV } from '@github/spark/hooks'
-import { Envelope, Trash, ArrowCounterClockwise, ArrowClockwise } from '@phosphor-icons/react'
+import { Envelope, Trash } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 interface DrawingCanvasProps {
@@ -20,8 +20,6 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
   const [drawings, setDrawings] = useKV<Array<{ id: string; name: string; image: string; timestamp: number }>>('drawings', [])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [userName, setUserName] = useState('')
-  const [history, setHistory] = useState<string[]>([])
-  const [historyIndex, setHistoryIndex] = useState(-1)
 
   const getCanvasCoordinates = useCallback((event: MouseEvent | TouchEvent) => {
     const canvas = canvasRef.current
@@ -60,19 +58,6 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
     setLastPosition(coords)
   }, [getCanvasCoordinates, onDrawingStateChange])
 
-  const saveToHistory = useCallback(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const imageData = canvas.toDataURL()
-    setHistory(currentHistory => {
-      const newHistory = currentHistory.slice(0, historyIndex + 1)
-      newHistory.push(imageData)
-      return newHistory
-    })
-    setHistoryIndex(current => current + 1)
-  }, [historyIndex])
-
   const draw = useCallback((event: MouseEvent | TouchEvent) => {
     if (!isDrawing || !lastPosition) return
     console.log('draw called', event.type, 'isDrawing:', isDrawing)
@@ -101,13 +86,10 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
   }, [isDrawing, lastPosition, selectedColor, brushSize, getCanvasCoordinates])
 
   const stopDrawing = useCallback(() => {
-    if (isDrawing) {
-      saveToHistory()
-    }
     setIsDrawing(false)
     onDrawingStateChange?.(false)
     setLastPosition(null)
-  }, [isDrawing, saveToHistory, onDrawingStateChange])
+  }, [onDrawingStateChange])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -218,18 +200,6 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
     return () => window.removeEventListener('resize', resizeCanvas)
   }, [])
 
-  // Initialize history with blank canvas after first render
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas || history.length > 0) return
-    
-    setTimeout(() => {
-      const imageData = canvas.toDataURL()
-      setHistory([imageData])
-      setHistoryIndex(0)
-    }, 100)
-  }, [])
-
   const clearCanvas = () => {
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
@@ -237,43 +207,6 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
 
     ctx.fillStyle = 'white'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
-    saveToHistory()
-  }
-
-  const undo = () => {
-    if (historyIndex > 0) {
-      const canvas = canvasRef.current
-      const ctx = canvas?.getContext('2d')
-      if (!canvas || !ctx) return
-
-      setHistoryIndex(current => current - 1)
-      const img = new Image()
-      img.onload = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        ctx.fillStyle = 'white'
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        ctx.drawImage(img, 0, 0)
-      }
-      img.src = history[historyIndex - 1]
-    }
-  }
-
-  const redo = () => {
-    if (historyIndex < history.length - 1) {
-      const canvas = canvasRef.current
-      const ctx = canvas?.getContext('2d')
-      if (!canvas || !ctx) return
-
-      setHistoryIndex(current => current + 1)
-      const img = new Image()
-      img.onload = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        ctx.fillStyle = 'white'
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        ctx.drawImage(img, 0, 0)
-      }
-      img.src = history[historyIndex + 1]
-    }
   }
 
   const isCanvasEmpty = () => {
@@ -344,39 +277,6 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
         
         {/* Floating action buttons - positioned to avoid drawing interference */}
         {/* Semi-transparent when drawing to see underneath */}
-        
-        {/* Undo/Redo buttons - top left */}
-        <div className={`absolute top-4 left-4 flex flex-col gap-2 transition-opacity duration-200 pointer-events-auto ${
-          isDrawing ? 'opacity-30' : 'opacity-100'
-        }`}>
-          <Button 
-            onClick={undo} 
-            onTouchStart={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-            }}
-            variant="outline" 
-            size="icon"
-            disabled={historyIndex <= 0}
-            className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full touch-manipulation"
-          >
-            <ArrowCounterClockwise className="w-5 h-5" />
-          </Button>
-          
-          <Button 
-            onClick={redo} 
-            onTouchStart={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-            }}
-            variant="outline" 
-            size="icon"
-            disabled={historyIndex >= history.length - 1}
-            className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full touch-manipulation"
-          >
-            <ArrowClockwise className="w-5 h-5" />
-          </Button>
-        </div>
 
         {/* Clear and Save buttons - top right */}
         <div className={`absolute top-4 right-4 flex flex-col gap-2 transition-opacity duration-200 pointer-events-auto ${
