@@ -10,8 +10,8 @@ export function DrawingApp() {
     <div className="relative min-h-screen bg-background">
       <DrawingCanvas selectedColor={selectedColor} brushSize={brushSize} />
       
-      {/* Color palette positioned at top center */}
-      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-10">
+      {/* Color palette positioned at bottom left, vertically stacked for better finger access */}
+      <div className="fixed bottom-4 left-4 z-10">
         <div className="bg-card/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
           <ColorPalette 
             selectedColor={selectedColor} 

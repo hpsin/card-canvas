@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input'  
 import { Label } from '@/components/ui/label'
 import { useKV } from '@github/spark/hooks'
-import { Save, ArrowCounterClockwise, ArrowClockwise } from '@phosphor-icons/react'
+import { Envelope, Trash, ArrowCounterClockwise, ArrowClockwise } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 interface DrawingCanvasProps {
@@ -292,37 +292,50 @@ export function DrawingCanvas({ selectedColor, brushSize }: DrawingCanvasProps) 
           style={{ touchAction: 'none' }}
         />
         
-        {/* Controls overlay */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 bg-card/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+        {/* Floating action buttons - positioned to avoid drawing interference */}
+        
+        {/* Undo/Redo buttons - top left */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
           <Button 
             onClick={undo} 
             variant="outline" 
-            size="sm"
+            size="icon"
             disabled={historyIndex <= 0}
-            className="min-w-0 px-2"
+            className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full"
           >
-            <ArrowCounterClockwise className="w-4 h-4" />
+            <ArrowCounterClockwise className="w-5 h-5" />
           </Button>
           
           <Button 
             onClick={redo} 
             variant="outline" 
-            size="sm"
+            size="icon"
             disabled={historyIndex >= history.length - 1}
-            className="min-w-0 px-2"
+            className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full"
           >
-            <ArrowClockwise className="w-4 h-4" />
+            <ArrowClockwise className="w-5 h-5" />
           </Button>
-          
-          <Button onClick={clearCanvas} variant="outline" size="sm">
-            Clear
+        </div>
+
+        {/* Clear and Save buttons - top right */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2">
+          <Button 
+            onClick={clearCanvas} 
+            variant="outline" 
+            size="icon"
+            className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full"
+          >
+            <Trash className="w-5 h-5" />
           </Button>
           
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={handleSave} size="sm" className="bg-accent hover:bg-accent/90">
-                <Save className="w-4 h-4 mr-1" />
-                Save
+              <Button 
+                onClick={handleSave} 
+                size="icon"
+                className="w-12 h-12 bg-accent/90 hover:bg-accent backdrop-blur-sm shadow-lg rounded-full"
+              >
+                <Envelope className="w-5 h-5" />
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md mx-4">
