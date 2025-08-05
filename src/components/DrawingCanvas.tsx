@@ -28,25 +28,25 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
     if (!canvas) return { x: 0, y: 0 }
 
     const rect = canvas.getBoundingClientRect()
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
+    let clientX, clientY
 
     if ('touches' in event) {
       // Handle touch events - use the first active touch or changed touch
       const touch = event.touches[0] || event.changedTouches[0]
       if (!touch) return { x: 0, y: 0 }
-      
-      return {
-        x: (touch.clientX - rect.left) * scaleX,
-        y: (touch.clientY - rect.top) * scaleY
-      }
+      clientX = touch.clientX
+      clientY = touch.clientY
     } else {
       // Handle mouse events
-      return {
-        x: (event.clientX - rect.left) * scaleX,
-        y: (event.clientY - rect.top) * scaleY
-      }
+      clientX = event.clientX
+      clientY = event.clientY
     }
+
+    // Calculate coordinates relative to canvas display size
+    const x = clientX - rect.left
+    const y = clientY - rect.top
+    
+    return { x, y }
   }, [])
 
   const startDrawing = useCallback((event: MouseEvent | TouchEvent) => {
@@ -192,9 +192,16 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
       canvas.style.width = `${canvasWidth}px`
       canvas.style.height = `${canvasHeight}px`
       
+      // Set actual canvas size with device pixel ratio for crisp rendering
       canvas.width = canvasWidth * window.devicePixelRatio
       canvas.height = canvasHeight * window.devicePixelRatio
+      
+      // Scale the context to match device pixel ratio
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+      
+      // Set CSS size to match desired display size
+      canvas.style.width = `${canvasWidth}px`
+      canvas.style.height = `${canvasHeight}px`
       
       ctx.fillStyle = 'white'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -339,7 +346,15 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
         }`}>
           <Button 
             onClick={undo} 
-            onTouchStart={(e) => e.stopPropagation()}
+            onTouchStart={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              undo()
+            }}
             variant="outline" 
             size="icon"
             disabled={historyIndex <= 0}
@@ -350,7 +365,15 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
           
           <Button 
             onClick={redo} 
-            onTouchStart={(e) => e.stopPropagation()}
+            onTouchStart={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              redo()
+            }}
             variant="outline" 
             size="icon"
             disabled={historyIndex >= history.length - 1}
@@ -366,7 +389,15 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
         }`}>
           <Button 
             onClick={clearCanvas} 
-            onTouchStart={(e) => e.stopPropagation()}
+            onTouchStart={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              clearCanvas()
+            }}
             variant="outline" 
             size="icon"
             className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full"
@@ -378,7 +409,15 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
             <DialogTrigger asChild>
               <Button 
                 onClick={handleSave} 
-                onTouchStart={(e) => e.stopPropagation()}
+                onTouchStart={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleSave()
+                }}
                 size="icon"
                 className="w-12 h-12 bg-accent/90 hover:bg-accent backdrop-blur-sm shadow-lg rounded-full"
               >
