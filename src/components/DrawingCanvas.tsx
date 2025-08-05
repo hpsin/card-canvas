@@ -108,9 +108,18 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
     const handleMouseMove = (e: MouseEvent) => draw(e)
     const handleMouseUp = () => stopDrawing()
 
-    const handleTouchStart = (e: TouchEvent) => startDrawing(e)
-    const handleTouchMove = (e: TouchEvent) => draw(e)
-    const handleTouchEnd = () => stopDrawing()
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault()
+      startDrawing(e)
+    }
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault()
+      draw(e)
+    }
+    const handleTouchEnd = (e: TouchEvent) => {
+      e.preventDefault()
+      stopDrawing()
+    }
 
     canvas.addEventListener('mousedown', handleMouseDown)
     canvas.addEventListener('mousemove', handleMouseMove)
@@ -119,8 +128,8 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
 
     canvas.addEventListener('touchstart', handleTouchStart, { passive: false })
     canvas.addEventListener('touchmove', handleTouchMove, { passive: false })
-    canvas.addEventListener('touchend', handleTouchEnd)
-    canvas.addEventListener('touchcancel', handleTouchEnd)
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: false })
+    canvas.addEventListener('touchcancel', handleTouchEnd, { passive: false })
 
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown)
