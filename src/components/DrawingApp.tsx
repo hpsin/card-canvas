@@ -17,7 +17,7 @@ export function DrawingApp() {
       
       {/* Color palette positioned at bottom left, vertically stacked for better finger access */}
       {/* Semi-transparent when drawing to see underneath */}
-      <div className={`fixed bottom-4 left-4 z-10 transition-opacity duration-200 ${
+      <div className={`fixed bottom-4 left-4 z-10 transition-opacity duration-200 pointer-events-auto ${
         isDrawing ? 'opacity-30' : 'opacity-100'
       }`}>
         <div className="bg-card/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">

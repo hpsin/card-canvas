@@ -43,6 +43,7 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
     }
 
     // Calculate coordinates relative to canvas display size
+    // No need to scale by devicePixelRatio here since we want display coordinates
     const x = clientX - rect.left
     const y = clientY - rect.top
     
@@ -50,8 +51,10 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
   }, [])
 
   const startDrawing = useCallback((event: MouseEvent | TouchEvent) => {
+    console.log('startDrawing called', event.type)
     event.preventDefault()
     const coords = getCanvasCoordinates(event)
+    console.log('Canvas coords:', coords)
     setIsDrawing(true)
     onDrawingStateChange?.(true)
     setLastPosition(coords)
@@ -72,6 +75,7 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
 
   const draw = useCallback((event: MouseEvent | TouchEvent) => {
     if (!isDrawing || !lastPosition) return
+    console.log('draw called', event.type, 'isDrawing:', isDrawing)
     event.preventDefault()
 
     const canvas = canvasRef.current
@@ -79,6 +83,7 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
     if (!canvas || !ctx) return
 
     const coords = getCanvasCoordinates(event)
+    console.log('Drawing from', lastPosition, 'to', coords)
 
     ctx.globalCompositeOperation = selectedColor === 'eraser' ? 'destination-out' : 'source-over'
     ctx.strokeStyle = selectedColor === 'eraser' ? 'rgba(0,0,0,1)' : selectedColor
@@ -341,7 +346,7 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
         {/* Semi-transparent when drawing to see underneath */}
         
         {/* Undo/Redo buttons - top left */}
-        <div className={`absolute top-4 left-4 flex flex-col gap-2 transition-opacity duration-200 ${
+        <div className={`absolute top-4 left-4 flex flex-col gap-2 transition-opacity duration-200 pointer-events-auto ${
           isDrawing ? 'opacity-30' : 'opacity-100'
         }`}>
           <Button 
@@ -350,15 +355,10 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
               e.preventDefault()
               e.stopPropagation()
             }}
-            onTouchEnd={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              undo()
-            }}
             variant="outline" 
             size="icon"
             disabled={historyIndex <= 0}
-            className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full"
+            className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full touch-manipulation"
           >
             <ArrowCounterClockwise className="w-5 h-5" />
           </Button>
@@ -369,22 +369,17 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
               e.preventDefault()
               e.stopPropagation()
             }}
-            onTouchEnd={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              redo()
-            }}
             variant="outline" 
             size="icon"
             disabled={historyIndex >= history.length - 1}
-            className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full"
+            className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full touch-manipulation"
           >
             <ArrowClockwise className="w-5 h-5" />
           </Button>
         </div>
 
         {/* Clear and Save buttons - top right */}
-        <div className={`absolute top-4 right-4 flex flex-col gap-2 transition-opacity duration-200 ${
+        <div className={`absolute top-4 right-4 flex flex-col gap-2 transition-opacity duration-200 pointer-events-auto ${
           isDrawing ? 'opacity-30' : 'opacity-100'
         }`}>
           <Button 
@@ -393,14 +388,9 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
               e.preventDefault()
               e.stopPropagation()
             }}
-            onTouchEnd={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              clearCanvas()
-            }}
             variant="outline" 
             size="icon"
-            className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full"
+            className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full touch-manipulation"
           >
             <Trash className="w-5 h-5" />
           </Button>
@@ -413,13 +403,8 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
                   e.preventDefault()
                   e.stopPropagation()
                 }}
-                onTouchEnd={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleSave()
-                }}
                 size="icon"
-                className="w-12 h-12 bg-accent/90 hover:bg-accent backdrop-blur-sm shadow-lg rounded-full"
+                className="w-12 h-12 bg-accent/90 hover:bg-accent backdrop-blur-sm shadow-lg rounded-full touch-manipulation"
               >
                 <Envelope className="w-5 h-5" />
               </Button>

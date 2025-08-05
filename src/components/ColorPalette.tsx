@@ -28,13 +28,8 @@ export function ColorPalette({ selectedColor, onColorChange }: ColorPaletteProps
             e.preventDefault()
             e.stopPropagation()
           }}
-          onTouchEnd={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            onColorChange(color.value)
-          }}
           className={cn(
-            "w-12 h-12 rounded-full p-0 border-2 transition-all duration-200",
+            "w-12 h-12 rounded-full p-0 border-2 transition-all duration-200 touch-manipulation",
             selectedColor === color.value 
               ? "border-ring shadow-lg scale-110" 
               : "border-border hover:border-ring/50 hover:scale-105"
