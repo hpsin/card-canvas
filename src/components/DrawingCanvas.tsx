@@ -32,12 +32,16 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
     const scaleY = canvas.height / rect.height
 
     if ('touches' in event) {
+      // Handle touch events - use the first active touch or changed touch
       const touch = event.touches[0] || event.changedTouches[0]
+      if (!touch) return { x: 0, y: 0 }
+      
       return {
         x: (touch.clientX - rect.left) * scaleX,
         y: (touch.clientY - rect.top) * scaleY
       }
     } else {
+      // Handle mouse events
       return {
         x: (event.clientX - rect.left) * scaleX,
         y: (event.clientY - rect.top) * scaleY
@@ -109,27 +113,41 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
     const handleMouseUp = () => stopDrawing()
 
     const handleTouchStart = (e: TouchEvent) => {
+      // Prevent scrolling and other default behaviors
       e.preventDefault()
+      e.stopPropagation()
       startDrawing(e)
     }
     const handleTouchMove = (e: TouchEvent) => {
+      // Prevent scrolling and other default behaviors
       e.preventDefault()
+      e.stopPropagation()
       draw(e)
     }
     const handleTouchEnd = (e: TouchEvent) => {
+      // Prevent scrolling and other default behaviors
       e.preventDefault()
+      e.stopPropagation()
       stopDrawing()
     }
 
+    // Mouse events
     canvas.addEventListener('mousedown', handleMouseDown)
     canvas.addEventListener('mousemove', handleMouseMove)
     canvas.addEventListener('mouseup', handleMouseUp)
     canvas.addEventListener('mouseleave', handleMouseUp)
 
+    // Touch events with passive: false to allow preventDefault
     canvas.addEventListener('touchstart', handleTouchStart, { passive: false })
     canvas.addEventListener('touchmove', handleTouchMove, { passive: false })
     canvas.addEventListener('touchend', handleTouchEnd, { passive: false })
     canvas.addEventListener('touchcancel', handleTouchEnd, { passive: false })
+
+    // Also add document-level touch end handlers to ensure we stop drawing
+    // even if the touch ends outside the canvas
+    const handleDocumentTouchEnd = () => stopDrawing()
+    document.addEventListener('touchend', handleDocumentTouchEnd)
+    document.addEventListener('touchcancel', handleDocumentTouchEnd)
 
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown)
@@ -141,6 +159,9 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
       canvas.removeEventListener('touchmove', handleTouchMove)
       canvas.removeEventListener('touchend', handleTouchEnd)
       canvas.removeEventListener('touchcancel', handleTouchEnd)
+
+      document.removeEventListener('touchend', handleDocumentTouchEnd)
+      document.removeEventListener('touchcancel', handleDocumentTouchEnd)
     }
   }, [startDrawing, draw, stopDrawing])
 
@@ -300,8 +321,13 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
       <div className="relative">
         <canvas
           ref={canvasRef}
-          className="border border-border bg-white cursor-crosshair touch-none"
-          style={{ touchAction: 'none' }}
+          className="border border-border bg-white cursor-crosshair touch-none select-none"
+          style={{ 
+            touchAction: 'none',
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'none',
+            userSelect: 'none'
+          }}
         />
         
         {/* Floating action buttons - positioned to avoid drawing interference */}
@@ -313,6 +339,7 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
         }`}>
           <Button 
             onClick={undo} 
+            onTouchStart={(e) => e.stopPropagation()}
             variant="outline" 
             size="icon"
             disabled={historyIndex <= 0}
@@ -323,6 +350,7 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
           
           <Button 
             onClick={redo} 
+            onTouchStart={(e) => e.stopPropagation()}
             variant="outline" 
             size="icon"
             disabled={historyIndex >= history.length - 1}
@@ -338,6 +366,7 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
         }`}>
           <Button 
             onClick={clearCanvas} 
+            onTouchStart={(e) => e.stopPropagation()}
             variant="outline" 
             size="icon"
             className="w-12 h-12 bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg rounded-full"
@@ -349,6 +378,7 @@ export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }
             <DialogTrigger asChild>
               <Button 
                 onClick={handleSave} 
+                onTouchStart={(e) => e.stopPropagation()}
                 size="icon"
                 className="w-12 h-12 bg-accent/90 hover:bg-accent backdrop-blur-sm shadow-lg rounded-full"
               >

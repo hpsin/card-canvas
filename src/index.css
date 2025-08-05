@@ -8,6 +8,20 @@
   
   body {
     font-family: 'Inter', sans-serif;
+    /* Prevent touch behaviors that might interfere with drawing */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Prevent pull-to-refresh and overscroll */
+    overscroll-behavior: none;
+  }
+  
+  /* Ensure canvas container doesn't interfere with touch */
+  canvas {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 

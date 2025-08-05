@@ -24,6 +24,7 @@ export function ColorPalette({ selectedColor, onColorChange }: ColorPaletteProps
         <Button
           key={color.value}
           onClick={() => onColorChange(color.value)}
+          onTouchStart={(e) => e.stopPropagation()}
           className={cn(
             "w-12 h-12 rounded-full p-0 border-2 transition-all duration-200",
             selectedColor === color.value 
