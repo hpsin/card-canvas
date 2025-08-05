@@ -19,7 +19,7 @@ const colors = [
 
 export function ColorPalette({ selectedColor, onColorChange }: ColorPaletteProps) {
   return (
-    <div className="flex gap-2 p-4 bg-card rounded-lg border">
+    <div className="flex gap-2">
       {colors.map((color) => (
         <Button
           key={color.value}

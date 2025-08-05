@@ -7,20 +7,12 @@ export function DrawingApp() {
   const brushSize = 4
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-4xl mx-auto h-[calc(100vh-2rem)] flex flex-col">
-        <header className="mb-4">
-          <h1 className="text-2xl font-bold text-center">Drawing Canvas</h1>
-          <p className="text-muted-foreground text-center">
-            Create your masterpiece with your finger or mouse
-          </p>
-        </header>
-        
-        <div className="flex-1 flex flex-col gap-4">
-          <div className="flex-1 min-h-0">
-            <DrawingCanvas selectedColor={selectedColor} brushSize={brushSize} />
-          </div>
-          
+    <div className="relative min-h-screen bg-background">
+      <DrawingCanvas selectedColor={selectedColor} brushSize={brushSize} />
+      
+      {/* Color palette positioned at top center */}
+      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-10">
+        <div className="bg-card/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
           <ColorPalette 
             selectedColor={selectedColor} 
             onColorChange={setSelectedColor} 
