@@ -10,9 +10,10 @@ import { toast } from 'sonner'
 interface DrawingCanvasProps {
   selectedColor: string
   brushSize: number
+  onDrawingStateChange?: (isDrawing: boolean) => void
 }
 
-export function DrawingCanvas({ selectedColor, brushSize }: DrawingCanvasProps) {
+export function DrawingCanvas({ selectedColor, brushSize, onDrawingStateChange }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
   const [lastPosition, setLastPosition] = useState<{ x: number; y: number } | null>(null)
@@ -48,8 +49,9 @@ export function DrawingCanvas({ selectedColor, brushSize }: DrawingCanvasProps) 
     event.preventDefault()
     const coords = getCanvasCoordinates(event)
     setIsDrawing(true)
+    onDrawingStateChange?.(true)
     setLastPosition(coords)
-  }, [getCanvasCoordinates])
+  }, [getCanvasCoordinates, onDrawingStateChange])
 
   const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current
@@ -94,8 +96,9 @@ export function DrawingCanvas({ selectedColor, brushSize }: DrawingCanvasProps) 
       saveToHistory()
     }
     setIsDrawing(false)
+    onDrawingStateChange?.(false)
     setLastPosition(null)
-  }, [isDrawing, saveToHistory])
+  }, [isDrawing, saveToHistory, onDrawingStateChange])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -293,9 +296,12 @@ export function DrawingCanvas({ selectedColor, brushSize }: DrawingCanvasProps) 
         />
         
         {/* Floating action buttons - positioned to avoid drawing interference */}
+        {/* Semi-transparent when drawing to see underneath */}
         
         {/* Undo/Redo buttons - top left */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2">
+        <div className={`absolute top-4 left-4 flex flex-col gap-2 transition-opacity duration-200 ${
+          isDrawing ? 'opacity-30' : 'opacity-100'
+        }`}>
           <Button 
             onClick={undo} 
             variant="outline" 
@@ -318,7 +324,9 @@ export function DrawingCanvas({ selectedColor, brushSize }: DrawingCanvasProps) 
         </div>
 
         {/* Clear and Save buttons - top right */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2">
+        <div className={`absolute top-4 right-4 flex flex-col gap-2 transition-opacity duration-200 ${
+          isDrawing ? 'opacity-30' : 'opacity-100'
+        }`}>
           <Button 
             onClick={clearCanvas} 
             variant="outline" 
