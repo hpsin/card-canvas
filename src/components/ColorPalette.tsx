@@ -1,6 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { Eraser } from '@phosphor-icons/react'
 
 interface ColorPaletteProps {
   selectedColor: string
@@ -40,9 +41,7 @@ export function ColorPalette({ selectedColor, onColorChange }: ColorPaletteProps
           title={color.name}
         >
           {color.value === 'eraser' && (
-            <div className="w-6 h-6 bg-white border border-gray-300 rounded-sm relative">
-              <div className="absolute inset-1 bg-pink-100 rounded-sm opacity-50" />
-            </div>
+            <Eraser size={24} className="text-gray-600" />
           )}
         </Button>
       ))}
