@@ -5,6 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Download, Trash2 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
+declare global {
+  interface Window {
+    spark: {
+      user: () => Promise<{ avatarUrl: string; email: string; id: string; isOwner: boolean; login: string }>
+    }
+  }
+}
+
 interface Drawing {
   id: string
   name: string
@@ -20,7 +28,7 @@ export function AdminPanel() {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const currentUser = await spark.user()
+        const currentUser = await window.spark.user()
         setUser(currentUser)
       } catch (error) {
         console.error('Failed to get user:', error)
