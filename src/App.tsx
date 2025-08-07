@@ -4,11 +4,12 @@ import { AdminPanel } from '@/components/AdminPanel'
 import { Toaster } from '@/components/ui/sonner'
 
 function App() {
-  const isAdminRoute = window.location.pathname === '/admin'
+  const urlParams = new URLSearchParams(window.location.search)
+  const isAdminMode = urlParams.get('admin') === 'true'
   
   return (
     <div>
-      {isAdminRoute ? <AdminPanel /> : <DrawingApp />}
+      {isAdminMode ? <AdminPanel /> : <DrawingApp />}
       <Toaster />
     </div>
   )
